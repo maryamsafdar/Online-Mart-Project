@@ -1,12 +1,13 @@
 from sqlmodel import Session
 from app.db_engine import engine
-from aiokafka import AIOKafkaProducer
+from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
+from app import settings
 
 
 def get_session():
     with Session(engine) as session:
         yield session
-
+    
 # Kafka Producer as a dependency
 async def get_kafka_producer():
     producer = AIOKafkaProducer(bootstrap_servers='broker:19092')
@@ -14,4 +15,4 @@ async def get_kafka_producer():
     try:
         yield producer
     finally:
-        await producer.stop()        
+        await producer.stop()

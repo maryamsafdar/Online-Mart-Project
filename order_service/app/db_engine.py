@@ -1,12 +1,12 @@
-from app import settings
+# db_engine.py
 from sqlmodel import create_engine
+from app import settings
 
 # only needed for psycopg 3 - replace postgresql
 # with postgresql+psycopg in settings.DATABASE_URL
 connection_string = str(settings.DATABASE_URL).replace(
     "postgresql", "postgresql+psycopg"
 )
-
 
 # recycle connections after 5 minutes
 # to correspond with the compute scale down

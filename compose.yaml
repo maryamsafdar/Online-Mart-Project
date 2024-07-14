@@ -23,6 +23,7 @@ services:
     depends_on:
         - postgres_order_db
         - broker
+      
     ports:
       - "8004:8004"  # Expose container port 8000 to host port 8004 
 
