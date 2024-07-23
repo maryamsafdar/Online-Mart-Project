@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from sqlmodel import Session, select
-from app.models.inventory_model import InventoryItem
+from app.models.inventory_model import InventoryItem,InventoryItemUpdate
 
 # Add a New Inventory Item to the Database
 def add_new_inventory_item(inventory_item_data: InventoryItem, session: Session):
@@ -33,15 +33,30 @@ def delete_inventory_item_by_id(inventory_item_id: int, session: Session):
     session.commit()
     return {"message": "Inventory Item Deleted Successfully"}
 
-# # Update Product by ID
-# def update_product_by_id(product_id: int, to_update_product_data:ProductUpdate, session: Session):
-#     # Step 1: Get the Product by ID
-#     product = session.exec(select(Product).where(Product.id == product_id)).one_or_none()
-#     if product is None:
-#         raise HTTPException(status_code=404, detail="Product not found")
-#     # Step 2: Update the Product
-#     hero_data = to_update_product_data.model_dump(exclude_unset=True)
-#     product.sqlmodel_update(hero_data)
-#     session.add(product)
-#     session.commit()
-#     return product
+# Update Inventory by Product ID
+def update_inventory_by_id(product_id: int, update_product_inventory:InventoryItemUpdate, session: Session):
+    # Step 1: Get the inventory by Product ID
+    inventory = session.exec(select(InventoryItem).where(InventoryItem.product_id == product_id)).one_or_none()
+    if inventory is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    # Step 2: Update the Product
+    update_data = update_product_inventory.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(inventory, key, value)
+    session.add(inventory)
+    session.commit()
+    return inventory
+
+
+#update inventory stock
+def update_inventory_stock(session: Session, product_id: int, quantity_change: int):
+    inventory_item = session.exec(select(InventoryItem).where(InventoryItem.product_id == product_id)).one_or_none()
+    if inventory_item:
+        if inventory_item.quantity + quantity_change < 0:
+            raise HTTPException(status_code=400, detail="Insufficient stock")
+        inventory_item.quantity += quantity_change
+        session.add(inventory_item)
+        session.commit()
+        return inventory_item
+    else:
+        raise HTTPException(status_code=404, detail="Product not found")    
