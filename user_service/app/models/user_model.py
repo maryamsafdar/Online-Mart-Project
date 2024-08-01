@@ -38,3 +38,9 @@ class Token (BaseModel):
         token_type: str
        
 
+class TokenData (BaseModel):
+        username:str
+
+class UserAuthenticate(BaseModel):
+    username: str
+    password: str

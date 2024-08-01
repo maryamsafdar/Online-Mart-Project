@@ -1,6 +1,7 @@
 # main.py
 from contextlib import asynccontextmanager
 from typing import Union, Optional, Annotated
+from app.send_email import send_email_notification
 from sqlmodel import Field, Session, SQLModel, select, Sequence
 from fastapi import FastAPI, Depends,HTTPException
 from typing import AsyncGenerator
@@ -17,41 +18,37 @@ from app.crud.noti_crud import add_new_notification,delete_notification_by_id,ge
 def create_db_and_tables()->None:
     SQLModel.metadata.create_all(engine)
 
-# async def consume_messages(topic, bootstrap_servers):
-#     # Create a consumer instance.
-#     consumer = AIOKafkaConsumer(
-#         topic,
-#         bootstrap_servers=bootstrap_servers,
-#         group_id="product_consumer_group",
-#         auto_offset_reset='earliest'
-#     )
+async def consume_messages(topic, bootstrap_servers):
+    consumer = AIOKafkaConsumer(
+        topic,
+        bootstrap_servers=bootstrap_servers,
+        group_id="notification-consumer-group",
+        auto_offset_reset="earliest",
+    )
 
-#     # Start the consumer.
-#     await consumer.start()
-#     try:
-#         # Continuously listen for messages.
-#         async for message in consumer:
-#             print("RAW")
-#             print(f"Received message on topic {message.topic}")
+    await consumer.start()
+    try:
+        async for message in consumer:
+            print(f"Received message on topic {message.topic}")
 
-#             product_data = json.loads(message.value.decode())
-#             print("TYPE", (type(product_data)))
-#             print(f"Product Data {product_data}")
+            notification_data = json.loads(message.value.decode())
+            print(f"Notification Data: {notification_data}")
 
-
-            
-#             with next(get_session()) as session:
-#                 print("SAVING DATA TO DATABSE")
-#                 db_insert_product = add_new_product(
-#                     product_data=Product(**product_data), session=session)
-#                 print("DB_INSERT_PRODUCT", db_insert_product)
-                
-#             # print(f"Received message: {message.value.decode()} on topic {message.topic}")
-#             # Here you can add code to process each message.
-#             # Example: parse the message, store it in a database, etc.
-#     finally:
-#         # Ensure to close the consumer when done.
-#         await consumer.stop()
+            with next(get_session()) as session:
+                print("Saving data to database")
+                db_insert_notification = add_new_notification(
+                    notification_data=Notification(**notification_data), session=session)
+                print("DB_INSERT_NOTIFICATION", db_insert_notification)
+            #Send email notification
+            if 'recipient' in notification_data:
+                    send_email_notification(
+                        email_to=notification_data['recipient'],
+                        subject=notification_data['title'],
+                        email_content_for_send=notification_data['message']
+                    )
+    finally:
+        
+        await consumer.stop()
 
 
 # # The first part of the function, before the yield, will
@@ -60,13 +57,13 @@ def create_db_and_tables()->None:
 # # loop = asyncio.get_event_loop()
 @asynccontextmanager
 async def lifespan(app: FastAPI)-> AsyncGenerator[None, None]:
-    print("Creating tables....")
-    # task = asyncio.create_task(consume_messages(settings.KAFKA_ORDER_TOPIC, 'broker:19092'))
+    print("Creating tables..............")
+    task = asyncio.create_task(consume_messages(settings.KAFKA_NOTIFICATION_TOPIC, 'broker:19092'))
     create_db_and_tables()
     yield
 
 
-app = FastAPI(lifespan=lifespan, title="Hello World API with DB", 
+app = FastAPI(lifespan=lifespan, title="Notification API with DB", 
     version="0.0.1",
     # servers=[
     #     {
@@ -91,11 +88,11 @@ def read_root():
 
 @app.post("/notifications/", response_model=Notification)
 async def create_new_notification(notification: Notification, session: Annotated[Session, Depends(get_session)], producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
-    # notification_dict = {field: getattr(notification, field) for field in notification.dict()}
-    # notification_json = json.dumps(notification_dict).encode("utf-8")
-    # print("notificationJSON:", notification_json)
-    # # Produce message
-    # await producer.send_and_wait(settings.KAFKA_NOTIFICATION_TOPIC, notification_json)
+    notification_dict = {field: getattr(notification, field) for field in notification.dict()}
+    notification_json = json.dumps(notification_dict).encode("utf-8")
+    print("notificationJSON:", notification_json)
+    # Produce message
+    await producer.send_and_wait(settings.KAFKA_NOTIFICATION_TOPIC, notification_json)
     return add_new_notification(notification_data=notification, session=session)
     
 

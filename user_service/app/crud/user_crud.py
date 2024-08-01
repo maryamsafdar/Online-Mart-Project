@@ -1,5 +1,4 @@
 from app.models.user_model import User
-
 from sqlmodel import Session , select
 from fastapi import HTTPException
 from app.models.user_model import UserUpdate
@@ -11,7 +10,6 @@ def add_new_user(user_data: User, session: Session):
     session.commit()
     session.refresh(user_data)
     return user_data
-
 
 # Get All Users from the Database
 def get_all_users(session: Session):
@@ -44,5 +42,3 @@ def update_user_by_id(user_id: int, to_update_user_data: UserUpdate, session: Se
     session.add(user)
     session.commit()
     return user
-
-    
