@@ -23,7 +23,7 @@ async def consume_messages(topic, bootstrap_servers):
         topic,
         bootstrap_servers=bootstrap_servers,
         group_id="notification-consumer-group",
-        auto_offset_reset="earliest",
+        #auto_offset_reset="earliest",
     )
 
     await consumer.start()
