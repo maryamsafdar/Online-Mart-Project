@@ -15,7 +15,7 @@ from app.models.user_model import User,UserUpdate,Register_User,Token
 from app.crud.user_crud import add_new_user,get_user_by_id,get_all_users,delete_user_by_id,update_user_by_id
 from app.auth import current_user, get_user_from_db ,hash_password,authenticate_user,EXPIRY_TIME,create_access_token
 from fastapi.security import OAuth2PasswordRequestForm
-from app.utils.email_address import validate_email_address
+
 
 
 def create_db_and_tables()->None:
@@ -57,8 +57,8 @@ async def consume_messages(topic, bootstrap_servers):
         await consumer.stop()
 @asynccontextmanager
 async def lifespan(app: FastAPI)-> AsyncGenerator[None, None]:
-    print("Creating tables..")
-    task = asyncio.create_task(consume_messages(settings.KAFKA_NOTIFICATION_TOPIC,'broker:19092'))
+    print("Creating tables....")
+    #task = asyncio.create_task(consume_messages(settings.KAFKA_NOTIFICATION_TOPIC,'broker:19092'))
     
     create_db_and_tables()
     yield
@@ -165,7 +165,7 @@ async def regiser_user(new_user:Annotated[Register_User, Depends()],
         "status": "pending"
     }
     notification_json = json.dumps(notification_message).encode("utf-8")
-    await producer.send_and_wait(settings.KAFKA_NOTIFICATION_TOPIC, notification_json)
+    await producer.send_and_wait('notification-topic', notification_json)
     return {"message": f""" {user.username} successfully registered """}    
 
 # login user with username and password

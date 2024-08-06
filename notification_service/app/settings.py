@@ -21,6 +21,6 @@ SMTP_SSL = config("SMTP_SSL", cast=str)
 SMTP_PORT = config("SMTP_PORT", cast=str)
 EMAILS_FROM_NAME = config("EMAILS_FROM_NAME", cast=str)
 emails_enabled = True
-EMAILS_FROM_EMAIL = ""
+#EMAILS_FROM_EMAIL = ""
 
 # TEST_DATABASE_URL = config("TEST_DATABASE_URL", cast=Secret)

@@ -57,8 +57,8 @@ async def consume_messages(topic, bootstrap_servers):
 # # loop = asyncio.get_event_loop()
 @asynccontextmanager
 async def lifespan(app: FastAPI)-> AsyncGenerator[None, None]:
-    print("Creating tables..............")
-    task = asyncio.create_task(consume_messages(settings.KAFKA_NOTIFICATION_TOPIC, 'broker:19092'))
+    print("Creating tables................")
+    task = asyncio.create_task(consume_messages('notification-topic', 'broker:19092'))
     create_db_and_tables()
     yield
 
@@ -86,15 +86,16 @@ def read_root():
 
 
 
-@app.post("/notifications/", response_model=Notification)
-async def create_new_notification(notification: Notification, session: Annotated[Session, Depends(get_session)], producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
-    notification_dict = {field: getattr(notification, field) for field in notification.dict()}
-    notification_json = json.dumps(notification_dict).encode("utf-8")
-    print("notificationJSON:", notification_json)
-    # Produce message
-    await producer.send_and_wait(settings.KAFKA_NOTIFICATION_TOPIC, notification_json)
-    return add_new_notification(notification_data=notification, session=session)
+# @app.post("/notifications/", response_model=Notification)
+# async def create_new_notification(notification: Notification, session: Annotated[Session, Depends(get_session)], producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)]):
+#     notification_dict = {field: getattr(notification, field) for field in notification.dict()}
+#     notification_json = json.dumps(notification_dict).encode("utf-8")
+#     print("notificationJSON:", notification_json)
+#     # Produce message
+#     await producer.send_and_wait(settings.KAFKA_NOTIFICATION_TOPIC, notification_json)
+#     return add_new_notification(notification_data=notification, session=session)
     
+
 
 @app.get("/notifications/", response_model=list[Notification])
 def read_notifications(session: Annotated[Session, Depends(get_session)]):

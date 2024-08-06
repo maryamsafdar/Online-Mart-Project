@@ -12,6 +12,7 @@ from app.db_engine import engine
 from app.deps import get_kafka_producer,get_session
 from app.models.order_model import Order,OrderUpdate,OrderBase,OrderCreate,OrderRead
 from app.crud.order_cruds import place_order,get_all_orders,get_order,delete_order,update_order,send_order_to_kafka,get_product_price,update_order_status
+import requests
 from app.consumer.order_check_reponse import consume_order_response_messages
 from app.shared_auth import get_current_user,get_login_for_access_token
 

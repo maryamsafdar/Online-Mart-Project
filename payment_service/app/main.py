@@ -8,7 +8,7 @@ from app.deps import create_db_and_tables
 # Lifespan manager to handle startup and shutdown of the app
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Creating tables.....")
+    print("Creating tables.......")
     create_db_and_tables()
     yield
 
