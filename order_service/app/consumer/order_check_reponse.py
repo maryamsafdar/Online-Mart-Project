@@ -14,7 +14,9 @@ async def consume_order_response_messages(topic, bootstrap_servers):
         topic,
         bootstrap_servers=bootstrap_servers,
         group_id="order-check-response-group",
-        auto_offset_reset="earliest",
+        #auto_offset_reset="earliest",
+        
+        
     )
 
     # Start the consumer.
@@ -32,10 +34,11 @@ async def consume_order_response_messages(topic, bootstrap_servers):
             if response_data["status"] == "success":
                 # Proceed with placing the order
                 session = next(get_session())
-                order_data = response_data["order"]
-                product_price = get_product_price(order_data["product_id"])
-                new_order = place_order(session, Order(**order_data), product_price)
-                print(f"Order placed successfully")
+                with next(get_session()) as session:
+                  order_data = response_data["order"]
+                  product_price = get_product_price(order_data["product_id"])
+                  new_order = place_order(session, Order(**order_data), product_price)
+                  print(f"Order placed successfully")
             else:
                 # Handle insufficient stock
                 print(f"Insufficient stock for order: {response_data['order_id']}")

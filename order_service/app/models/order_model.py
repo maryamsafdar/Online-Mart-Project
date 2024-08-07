@@ -20,6 +20,7 @@ class Order(OrderBase, table=True):
     # updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 class OrderCreate(OrderBase):
+    id:int
     pass
 
 class OrderRead(OrderBase):

@@ -63,6 +63,18 @@ async def create_order(order: OrderCreate, session: Annotated[Session, Depends(g
     order_json = json.dumps(order_dict).encode("utf-8")
     print("orderJSON:", order_json)
     await producer.send_and_wait("order_placed", order_json)
+    # Create notification message
+    notification_message = {
+        "user_id": current_user["id"],
+        "username": current_user["username"],
+        "email": current_user["email"],
+        "title": "Order Created",
+        "message": f"Order ID {new_order.id} has been successfully created by {current_user['username']}.",
+        "recipient": current_user["email"],
+        "status": "pending"
+    }
+    notification_json = json.dumps(notification_message).encode("utf-8")
+    await producer.send_and_wait("notification-topic", notification_json)
     return new_order
 
 @app.get("/orders/{order_id}", response_model=OrderRead)

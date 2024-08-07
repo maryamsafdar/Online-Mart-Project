@@ -14,7 +14,7 @@ def get_current_user(token: Annotated[str | None, Depends(oauth2_scheme)]):
     if token is None:
         raise HTTPException(status_code=401, detail="Unauthorized")
     
-    url = f"http://user-service-api:8005/user_profile"
+    url = f"http://user-service-api:8005/current-user"
     headers = {"Authorization": f"Bearer {token}"}
 
     response = get(url, headers=headers)
