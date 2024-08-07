@@ -20,7 +20,7 @@ async def consume_order_messages(topic, bootstrap_servers):
         topic,
         bootstrap_servers=bootstrap_servers,
         group_id="update-inventory-stock",
-        auto_offset_reset="earliest",
+        #auto_offset_reset="earliest",
     )
 
     # Start the consumer.

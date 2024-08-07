@@ -26,7 +26,7 @@ def create_db_and_tables()->None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI)-> AsyncGenerator[None, None]:
-    print("Creating tables..")
+    print("Creating tables....")
     #listens the order-check-response topic
     task = asyncio.create_task(consume_order_response_messages("order-check-response", 'broker:19092'))
     create_db_and_tables()

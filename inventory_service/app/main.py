@@ -25,7 +25,7 @@ def create_db_and_tables() -> None:
 # The first part of the function, before the yield, will
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    print("Creating table!!!!!!!!!")
+    print("Creating table!!!!!!!!!!!")
     task = asyncio.create_task(consume_messages("product-events", 'broker:19092'))
     
     asyncio.create_task(consume_order_messages(
